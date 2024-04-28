@@ -6,4 +6,4 @@ opencage
 geopy
 google-generativeai
 langchain-google-genai
-osmx
+osmnx
