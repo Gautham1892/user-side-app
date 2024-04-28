@@ -1,9 +1,11 @@
-# key = "d6b091e7cc134728a37482a5877cee71"  # Replace with your OpenCage API key
 import streamlit as st
 import folium
 from opencage.geocoder import OpenCageGeocode
 from geopy.distance import great_circle
 import folium.plugins as plugins
+import osmnx as ox
+import networkx as nx
+import numpy as np
 
 # Define locations
 corporation_zones = {
@@ -18,7 +20,6 @@ corporation_zones = {
     "Ambattur Camp": {"location": [13.0982, 80.1612], "areas": ["Ambattur", "Korattur"]},
     "Thiruvanmiyur Camp": {"location": [12.9855, 80.2677], "areas": ["Thiruvanmiyur", "Sholinganallur"]}
 }
-
 
 # Streamlit app
 st.title("Disaster Relief Deployment App")
@@ -57,14 +58,31 @@ if user_area:
         
         st.write(f"Nearest Chennai Corporation Zone: {nearest_zone}")
         
-        # Add waypoints for routing
-        waypoints = [
-            [user_lat, user_lon],
-            nearest_zone_data["location"]
-        ]
+        # Retrieve road network graph for the area
+        G = ox.graph_from_point(nearest_zone_data["location"], network_type='drive', dist=3000)
         
-        # Add routing control
-        folium.plugins.AntPath(locations=waypoints, color='green', weight=5).add_to(m)
+        # Find the nearest node on the road network to the user's location
+        nearest_node = ox.distance.nearest_nodes(G, user_lon, user_lat)
+        
+        # Find the nearest node on the road network to the nearest Chennai Corporation Zone
+        nearest_zone_node = ox.distance.nearest_nodes(G, nearest_zone_data["location"][1], nearest_zone_data["location"][0])
+        
+        # Find the shortest path between the two nodes
+        route = nx.shortest_path(G, nearest_node, nearest_zone_node, weight='length')
+        
+        # Plot the route on the map
+        route_coordinates = [(G.nodes[route[i]]['y'], G.nodes[route[i]]['x']) for i in range(len(route))]
+        folium.PolyLine(route_coordinates, color="green", weight=5, opacity=0.7).add_to(m)
+        
+        # Generate random points along the middle portion of the route
+        num_random_points = 5
+        middle_segment_length = len(route_coordinates) - 2  # Exclude the start and end points
+        random_points_indexes = np.linspace(4, middle_segment_length-4, num_random_points-1, dtype=int)
+        random_points = [route_coordinates[i] for i in random_points_indexes]
+        
+        # Add random points to the map
+        for point in random_points:
+            folium.Marker(point, popup="Water Logging", icon=folium.Icon(color="orange")).add_to(m)
 
 # Display map using Streamlit
 html = m._repr_html_()
