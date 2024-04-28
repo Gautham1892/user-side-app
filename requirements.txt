@@ -1,7 +1,7 @@
-streamlit==1.14.0
-gtts==2.2.3
-Pillow==9.0.0
-google-generativeai==1.0.0
-folium==0.12.1
-opencage==1.2.2
-geopy==2.3.0
+streamlit==1.32.2
+gtts==2.5.1
+Pillow==9.5.0
+google-generativeai==1.0.2
+folium==0.15.1
+opencage==2.4.0
+geopy==2.4.1
