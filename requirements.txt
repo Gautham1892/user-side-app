@@ -7,3 +7,4 @@ geopy
 google-generativeai
 langchain-google-genai
 osmnx
+scikit-learn
