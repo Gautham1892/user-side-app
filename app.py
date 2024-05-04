@@ -78,7 +78,7 @@ def execute_prompt_with_image(prompt, image):
     return response.text
 
 def main():
-    st.title("Arogya Setu GPT")
+    st.title("Disaster Relief GPT")
 
     # Initialize chat history
     if "messages" not in st.session_state:
